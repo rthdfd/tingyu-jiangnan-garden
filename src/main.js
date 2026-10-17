@@ -28,7 +28,7 @@ const fill=new THREE.DirectionalLight(0xd8e7d4,.46);fill.position.set(9,10,-13);
 const world=new THREE.Group();scene.add(world);
 
 const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{type:THREE.HalfFloatType,samples:captureMode?2:0});
-const composer=new EffectComposer(renderer,target);
+const composer=new EffectComposer(renderer,target);const basePass=new RenderPass(scene,camera);composer.addPass(basePass);
 const ao=new SSAOPass(scene,camera,innerWidth,innerHeight,16);ao.kernelRadius=.62;ao.minDistance=.001;ao.maxDistance=.075;composer.addPass(ao);
 const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.15,.52,1.18);composer.addPass(bloom);
 const grade=new ShaderPass({uniforms:{tDiffuse:{value:null},uNight:{value:0},uAspect:{value:innerWidth/innerHeight}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:`uniform sampler2D tDiffuse;uniform float uNight;uniform float uAspect;varying vec2 vUv;void main(){vec3 c=texture2D(tDiffuse,vUv).rgb;float l=dot(c,vec3(.2126,.7152,.0722));c=mix(vec3(l),c,.94);vec2 p=(vUv-.5)*vec2(1.05,.88);float vig=smoothstep(.12,.59,dot(p,p));c*=1.-.13*vig;float grain=(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5)*.0035;c+=grain;gl_FragColor=vec4(max(c,0.),1.);}`});composer.addPass(grade);composer.addPass(new OutputPass());

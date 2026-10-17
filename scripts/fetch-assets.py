@@ -43,7 +43,7 @@ def material(item):
             files = json.loads(fetch(f'https://api.polyhaven.com/files/{asset}'))
             result = {'asset': asset, 'source': f'https://polyhaven.com/a/{asset}', 'license': 'CC0', 'maps': {}}
             for channel in ['diff', 'nor_gl', 'rough']:
-                variations = files.get(channel, {})
+                variations = files.get({'diff': 'Diffuse', 'rough': 'Rough'}.get(channel, channel), files.get(channel, {}))
                 formats = variations.get('1k', variations.get('2k', {}))
                 entry = formats.get('jpg') or formats.get('png')
                 if not entry:
