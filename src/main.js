@@ -138,7 +138,7 @@ async function boot(){
  const loading=document.querySelector('#loading');if(captureMode)loading.style.display='none';else{loading.classList.add('done');setTimeout(()=>loading.remove(),900);}
  const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
  window.garden={
-  debugAO(mode){ao.enabled=true;excludeFogFromAO=true;debugDirect=mode==='direct';ctx.mists.forEach(m=>m.sprite.visible=mode!=='no-sprites');ctx.water.visible=ctx.puddle.visible=mode!=='no-reflections';},
+  debugAO(mode){debugDirect=false;ao.enabled=mode!=='base-output';bloom.enabled=!['no-bloom','base-output'].includes(mode);grade.enabled=!['no-grade','base-output'].includes(mode);composer.passes.at(-1).enabled=mode!=='no-output';ctx.mists.forEach(m=>m.sprite.visible=true);ctx.water.visible=ctx.puddle.visible=true;},
   presets:Object.keys(PRESETS),
   async capture(name){setView(name,true,true);elapsed=18.25;renderer.shadowMap.needsUpdate=true;render(0);await new Promise(resolve=>requestAnimationFrame(resolve));render(0);gl.finish();return this.diagnostics();},
   setView:(name)=>setView(name,true,false),
