@@ -30,7 +30,7 @@ const world=new THREE.Group();scene.add(world);
 const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{type:THREE.HalfFloatType,samples:0});
 const composer=new EffectComposer(renderer,target);const basePass=new RenderPass(scene,camera);composer.addPass(basePass);
 const ao=new SSAOPass(scene,camera,innerWidth,innerHeight,16);ao.kernelRadius=.62;ao.minDistance=.001;ao.maxDistance=.075;composer.addPass(ao);
-let excludeFogFromAO=true;
+let excludeFogFromAO=true,debugDirect=false;
 const originalAORender=ao.render.bind(ao);
 ao.render=function(...args){const hidden=[];if(excludeFogFromAO)scene.traverse(o=>{if(o.isSprite&&o.visible){hidden.push(o);o.visible=false;}});try{return originalAORender(...args);}finally{for(const o of hidden)o.visible=true;}};
 const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.15,.52,1.18);composer.addPass(bloom);
@@ -114,7 +114,7 @@ document.querySelector('#walk-button').addEventListener('click',()=>walking?stop
 document.querySelector('#time').addEventListener('input',e=>timeTarget=Number(e.target.value));document.querySelector('#day-button').addEventListener('click',()=>{timeTarget=0;document.querySelector('#time').value=0;});document.querySelector('#night-button').addEventListener('click',()=>{timeTarget=1;document.querySelector('#time').value=1;});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);grade.uniforms.uAspect.value=camera.aspect;if(captureMode&&ready)render(0);});
 function render(dt){
- tone(timeValue);windUniform.value=elapsed;updateWeather(ctx,elapsed,nightMix);walk(dt);renderer.info.reset();composer.render(dt);
+ tone(timeValue);windUniform.value=elapsed;updateWeather(ctx,elapsed,nightMix);walk(dt);renderer.info.reset();if(debugDirect){renderer.setRenderTarget(null);renderer.render(scene,camera);}else composer.render(dt);
 }
 function animate(now){
  requestAnimationFrame(animate);if(document.hidden||!ready)return;const dt=Math.min((now-lastTime)/1000,.05);lastTime=now;elapsed+=reduced?0:dt;
@@ -138,7 +138,7 @@ async function boot(){
  const loading=document.querySelector('#loading');if(captureMode)loading.style.display='none';else{loading.classList.add('done');setTimeout(()=>loading.remove(),900);}
  const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
  window.garden={
-  debugAO(mode){ao.enabled=mode!=='disabled';excludeFogFromAO=mode==='exclude-sprites';},
+  debugAO(mode){ao.enabled=true;excludeFogFromAO=true;debugDirect=mode==='direct';ctx.mists.forEach(m=>m.sprite.visible=mode!=='no-sprites');ctx.water.visible=ctx.puddle.visible=mode!=='no-reflections';},
   presets:Object.keys(PRESETS),
   async capture(name){setView(name,true,true);elapsed=18.25;renderer.shadowMap.needsUpdate=true;render(0);await new Promise(resolve=>requestAnimationFrame(resolve));render(0);gl.finish();return this.diagnostics();},
   setView:(name)=>setView(name,true,false),
