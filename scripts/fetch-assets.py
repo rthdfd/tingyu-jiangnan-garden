@@ -32,7 +32,7 @@ SETS = {
     'plaster': ['plastered_wall_02', 'plastered_wall_04', 'white_plaster_rough_01'],
     'stone': ['rock_boulder_dry', 'rock_face', 'aerial_rocks_02'],
     'earth': ['forest_ground_04', 'brown_mud_leaves_01', 'forest_ground_01'],
-    'paving': ['slate_floor_02', 'stone_floor', 'concrete_floor_worn_001'],
+    'paving': ['slate_floor', 'slate_floor_02', 'stone_floor'],
     'bark': ['bark_willow', 'bark_brown_02', 'bark_brown_01'],
 }
 
@@ -49,7 +49,7 @@ def material(item):
                 if not entry:
                     continue
                 ext = 'jpg' if 'jpg' in formats else 'png'
-                relative = f'materials/{alias}/{channel}.{ext}'
+                relative = f'materials/{alias}/{asset}/{channel}.{ext}'
                 raw = fetch(entry['url'], ROOT / relative)
                 result['maps'][channel] = {'file': relative, 'sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw)}
             if 'diff' in result['maps']:

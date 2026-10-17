@@ -7,7 +7,7 @@ const BAY=4.06, HALF=6.09;
 export function roofY(t,x=0,w=13.8,run=3.98,ridge=5.94,eave=3.63){const u=Math.min(1.03,Math.abs(t)/run);return ridge+(eave-ridge)*(1.7*u-.7*u*u)+.27*Math.pow(Math.abs(x)/(w/2),8)*Math.pow(u,3);}
 function tileGeo(width=.16,length=.34){
  const p=[],uv=[],idx=[];const nx=8,nz=2;
- for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){const a=i/nx*Math.PI;p.push(Math.cos(a)*width/2,Math.sin(a)*width*.38,j/nz*length-length/2);uv.push(i/nx,j/nz);if(j<nz&&i<nx){const k=j*(nx+1)+i;idx.push(k,k+1,k+nx+1,k+1,k+nx+2,k+nx+1);}}
+ for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){const a=i/nx*Math.PI;p.push(Math.cos(a)*width/2*(1+.10*j/nz),Math.sin(a)*width*.38*(1+.12*j/nz)+(j===nz?.006:0),j/nz*length-length/2);uv.push(i/nx,j/nz);if(j<nz&&i<nx){const k=j*(nx+1)+i;idx.push(k,k+1,k+nx+1,k+1,k+nx+2,k+nx+1);}}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g;
 }
 export function tiledRoof(parent,M,{width=13.8,run=3.98,ridge=5.94,eave=3.63,rafters=true}={}){

@@ -27,6 +27,10 @@ try{
  for(const [preset,file]of shots){
   const t=Date.now();console.log('RENDERING',preset);
   const diagnostic=await page.evaluate(async name=>await window.garden.capture(name),preset);
+  const frameSample=await page.evaluate(()=>window.garden.frameSample());
+  if(frameSample.mean<2||(diagnostic.time<.80&&frameSample.blackPixels>=3))throw new Error(`The ${preset} framebuffer contains unrendered black regions; refusing to publish it.`);
+  if(Math.hypot(...diagnostic.camera.map((v,i)=>v-diagnostic.expectedCamera[i]))>.015)throw new Error(`Camera pose for ${preset} was unexpectedly clamped.`);
+  diagnostic.frameSample=frameSample;
   await page.screenshot({path:`screenshots/${file}.png`,type:'png',timeout:300000});
   await page.screenshot({path:`screenshots/${file}.jpg`,type:'jpeg',quality:94,timeout:300000});
   report.shots.push({preset,file,seconds:(Date.now()-t)/1000,diagnostic});console.log('CAPTURED',file,report.shots.at(-1).seconds,'seconds');
@@ -35,7 +39,7 @@ try{
  report.interaction=await page.evaluate(()=>{
   const g=window.garden;
   const route=(ax,az,bx,bz)=>Array.from({length:41},(_,i)=>[ax+(bx-ax)*i/40,az+(bz-az)*i/40]).every(([x,z])=>g.canStand(x,z));
-  return {hallToStudy:route(-2.7,-4.4,-6.65,-4.4),hallToBedroom:route(-2.7,-4.4,1.25,-4.4),frontDoor:g.canStand(-2.7,-2.6),dayButton:!!document.querySelector('#day-button'),nightButton:!!document.querySelector('#night-button'),timeRange:document.querySelector('#time').type,walkButton:!!document.querySelector('#walk-button')};
+  return {hallToStudy:route(-2.7,-4.8,-6.65,-4.8),hallToBedroom:route(-2.7,-4.8,1.25,-4.8),frontDoor:g.canStand(-2.7,-2.6),dayButton:!!document.querySelector('#day-button'),nightButton:!!document.querySelector('#night-button'),timeRange:document.querySelector('#time').type,walkButton:!!document.querySelector('#walk-button')};
  });
  if(!report.interaction.hallToStudy||!report.interaction.hallToBedroom||!report.interaction.frontDoor)throw new Error('A required interior circulation route is blocked.');
  await page.click('[data-view=hall]');await page.evaluate(()=>window.garden.setView('hall'));await page.click('#walk-button');
@@ -43,6 +47,11 @@ try{
  report.interaction.firstPersonActuallyMoved=Math.hypot(after[0]-before[0],after[2]-before[2])>.15;
  if(!report.interaction.firstPersonActuallyMoved)throw new Error('First-person movement did not move the camera.');
  await page.keyboard.press('Escape');report.interaction.escapeExitsWalking=await page.evaluate(()=>!window.garden.diagnostics().walking);
+ await page.evaluate(()=>window.garden.setTime(.1));await page.click('#night-button');
+ const mid=await page.evaluate(()=>window.garden.advance(.35));const later=await page.evaluate(()=>window.garden.advance(.65));
+ await page.click('#day-button');const back=await page.evaluate(()=>window.garden.advance(.4));
+ report.interaction.continuousDayNight={mid,later,back,ok:mid>.1&&mid<later&&later<1&&back<later};
+ if(!report.interaction.continuousDayNight.ok)throw new Error('Visible day/night controls did not drive a continuous light transition.');
  if(errors.some(e=>/Shader Error|VALIDATE_STATUS|GL_INVALID|Error|THREE.WebGLProgram/i.test(e)))throw new Error('Browser/GL errors were recorded; screenshots require review.');
  report.ok=true;
 }catch(e){failure=e;report.ok=false;report.failure=e.stack||String(e);console.error(e);await page.screenshot({path:'screenshots/failure.jpg',type:'jpeg',quality:85,timeout:90000}).catch(()=>{});}

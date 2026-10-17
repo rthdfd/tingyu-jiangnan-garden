@@ -49,10 +49,14 @@ export async function createMaterials(renderer){
     return new THREE.MeshPhysicalMaterial(opts);
   }
   const M={};
-  M.wood=new THREE.MeshStandardMaterial({color:0x74513a,map:woodMap,bumpMap:woodBump,bumpScale:.012,roughness:.53});
+  function boardCrop(texture){if(!texture)return null;const im=texture.image;return canvasTexture(256,1024,(c,w,h)=>c.drawImage(im,im.width*.39,0,im.width*.12,im.height,0,0,w,h),texture.colorSpace===THREE.SRGBColorSpace);}
+  const realBoard=boardCrop(assets.wood?.diff),realBoardNormal=boardCrop(assets.wood?.nor_gl),realBoardRough=boardCrop(assets.wood?.rough);
+  M.wood=new THREE.MeshStandardMaterial({color:0x785138,map:realBoard||woodMap,bumpMap:woodBump,bumpScale:.008,roughness:.66});
+  if(realBoardNormal){M.wood.normalMap=realBoardNormal;M.wood.normalScale=new THREE.Vector2(.35,.35);}
+  if(realBoardRough)M.wood.roughnessMap=realBoardRough;
   M.woodLight=M.wood.clone();M.woodLight.color.set(0x9b7650);M.woodLight.roughness=.62;
   M.woodDark=M.wood.clone();M.woodDark.color.set(0x44312a);M.woodDark.roughness=.47;
-  M.furniture=M.wood.clone();M.furniture.color.set(0x60402b);M.furniture.roughness=.35;
+  M.furniture=M.wood.clone();M.furniture.color.set(0x60402b);M.furniture.roughness=.44;
   M.furnitureEdge=M.furniture.clone();M.furnitureEdge.color.set(0x815834);
   M.weatheredWood=pbr('wood',0x918574,.49,1,{clearcoat:.21,clearcoatRoughness:.32});
   M.plaster=pbr('plaster',0xe1e0cd,.87,2);
@@ -60,10 +64,10 @@ export async function createMaterials(renderer){
   M.plasterInterior=pbr('plaster',0xe5dcc5,.88,1);
   M.stone=pbr('stone',0x99a39a,.81,1);
   M.stoneWet=pbr('stone',0x7b8981,.49,1,{clearcoat:.38,clearcoatRoughness:.21});
-  M.earth=pbr('earth',0x7a8263,.93,6);
+  M.earth=pbr('earth',0x62774e,.93,6);
   M.soil=new THREE.MeshStandardMaterial({color:0x514b3d,map:stoneMap,roughness:1});
   M.paving=pbr('paving',0xa4ada2,.53,1,{clearcoat:.36,clearcoatRoughness:.19});
-  M.floor=pbr('paving',0x9c9984,.65,.7);
+  M.floor=pbr('paving',0xd5d7c8,.73,.7);
   M.bark=pbr('bark',0x6b6250,.96,1);
   M.tile=new THREE.MeshPhysicalMaterial({color:0x687875,map:tileMap,bumpMap:tileBump,bumpScale:.012,roughness:.47,clearcoat:.35,clearcoatRoughness:.3});
   M.tileDark=M.tile.clone();M.tileDark.color.set(0x465855);

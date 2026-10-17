@@ -4,6 +4,8 @@ A Three.js architectural visualization of an **asymmetrically composed Jiangnan 
 
 **Live garden:** https://rthdfd.github.io/tingyu-jiangnan-garden/
 
+**Phone-friendly static gallery (no 3D rendering):** https://rthdfd.github.io/tingyu-jiangnan-garden/gallery/
+
 **Rendered photographs:** [visual-preview release](https://github.com/rthdfd/tingyu-jiangnan-garden/releases/tag/visual-preview)
 
 ## Views
@@ -33,7 +35,7 @@ This is an original, historically informed visualization, **not a measured recon
 
 Photographic **CC0 Poly Haven PBR textures**, an overcast HDR environment, independently modelled fired-clay roof tiles, wet stone and wood, celadon and blue-white porcelain. Individually modelled botanical leaves form irregular branching trees, willow, bamboo, shrubs, vines, ferns, banana leaves, iris and aquatic foliage. Water uses planar reflections; paving has a separate irregular wet-reflection layer. Small eave drops, expanding rain rings and low drifting vapor remain present across daylight and night.
 
-Lighting uses environmental irradiance, shadowed directional light, traditional emissive paper lamps and local warm lights. The image pipeline adds contact ambient occlusion, restrained bloom, ACES tone mapping and subtle grain. This is raster PBR, not an offline path-traced film render.
+Lighting uses environmental irradiance, shadowed directional light, traditional emissive paper lamps and local warm lights. The image pipeline adds contact ambient occlusion, ACES tone mapping and subtle grain. This is raster PBR, not an offline path-traced film render.
 
 ## Controls
 

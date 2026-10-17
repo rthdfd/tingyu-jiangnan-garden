@@ -208,5 +208,5 @@ export function furnishHouse(house,M,ctx){
  const robe=mesh(rack,new THREE.PlaneGeometry(.64,1.13,8,18),M.bedding,.01,.95,.0);robe.rotation.y=Math.PI/2;
  for(const x of [-4.08,0,4.08])lantern(house,M,x,2.93,.15,ctx,.90,true);
  const soft=new THREE.PointLight(0xffd3a0,8,13,2);soft.position.set(0,2.25,2.3);house.add(soft);ctx.lamps.push({light:soft,day:6,night:18});
- for(const [x,z,w,d] of [[0,-.54,1.33,1.32],[-1.07,-.56,.68,.66],[1.08,-.56,.68,.66],[-4.05,-.95,2.37,.98],[-4.05,-1.73,.72,.69],[4.14,-1.24,2.30,2.75],[-4.04,-2.66,2.98,.48],[0,-2.43,3.24,.71]])collider(ctx.colliders,house,x,z,w,d);
+ for(const [x,z,w,d] of [[0,-.54,1.33,1.32],[-1.07,-.56,.68,.66],[1.08,-.56,.68,.66],[-4.05,-.95,2.37,.98],[-4.05,-1.73,.72,.69],[4.14,-1.24,2.30,2.75],[-4.04,-2.66,2.98,.48],[0,-2.43,3.24,.71],[2.63,1.55,.50,1.14],[4.74,1.04,1.73,.44],[-5.50,.93,.48,1.84]])collider(ctx.colliders,house,x,z,w,d);
 }

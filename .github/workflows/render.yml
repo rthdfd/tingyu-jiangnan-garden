@@ -23,7 +23,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: public/assets
-          key: tingyu-polyhaven-1k-v1
+          key: tingyu-polyhaven-1k-v2
       - name: Install build and browser dependencies (CI only)
         run: npm install --no-audit --no-fund
       - name: Prepare Chromium and Chinese serif fonts (CI only)
@@ -40,6 +40,9 @@ jobs:
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: npm run capture
+      - name: Package mobile-friendly JPEG set (CI only)
+        if: success()
+        run: python3 -c "from pathlib import Path; from zipfile import ZipFile, ZIP_STORED; z=ZipFile('screenshots/tingyu-jpg-gallery.zip','w',ZIP_STORED); [z.write(p,p.name) for p in sorted(Path('screenshots').glob('*.jpg'))]; z.write('screenshots/render-report.json','render-report.json'); z.close()"
       - name: Preserve diagnostic evidence even if rendering fails
         if: always()
         uses: actions/upload-artifact@v4
@@ -54,11 +57,13 @@ jobs:
         run: |
           gh release view visual-preview >/dev/null 2>&1 || gh release create visual-preview --target "$GITHUB_SHA" --title "听雨小筑 · 渲染截图" --prerelease --notes "Actual Chromium screenshots rendered on GitHub Actions. See render-report.json for validation evidence."
           find screenshots -type f -maxdepth 1 -print0 | xargs -0 -r gh release upload visual-preview --clobber
+          if [ ! -f screenshots/failure.jpg ]; then gh release delete-asset visual-preview failure.jpg --yes 2>/dev/null || true; fi
       - name: Include an image gallery in the built site
         if: success()
         run: |
           mkdir -p dist/gallery
           cp screenshots/*.jpg screenshots/render-report.json dist/gallery/
+          node scripts/gallery.mjs
       - name: Upload interactive website
         if: success()
         uses: actions/upload-pages-artifact@v3

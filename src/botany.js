@@ -42,8 +42,8 @@ function willowTree(root,M,leaves,x,z){
    const t=rand(.40,1.02),top=st.clone().lerp(ed,t).add(V(rand(-.35,.35),.45,rand(-.35,.35))),drop=rand(.9,2.6);
    const points=[top,top.clone().add(V(.16,-drop*.45,.08)),top.clone().add(V(.09,-drop,.17))];tube(g,M.bark,points,.006,14,4);
    for(let k=0;k<23;k++)for(const side of [-1,1]){
-    const tt=k/23,pos=top.clone().add(V(.13*Math.sin(tt*3),-drop*tt,.13*tt));g.updateWorldMatrix(true,false);pos.applyMatrix4(g.matrixWorld);
-    leaves.add(pos,V(.18,.23,.23),new THREE.Euler(.58,side*.70+a,side*.25),choose(['#80945a','#697d4b','#6c8654','#8d9b66']));
+    const tt=k/23,pos=top.clone().add(V(.13*Math.sin(tt*3)+rand(-.035,.035),-drop*tt+rand(-.025,.025),.13*tt+rand(-.04,.04)));g.updateWorldMatrix(true,false);pos.applyMatrix4(g.matrixWorld);
+    leaves.add(pos,V(.14,.17,.17),new THREE.Euler(.58+rand(-.3,.3),side*.70+a+rand(-.45,.45),side*.25+rand(-.3,.3)),choose(['#80945a','#697d4b','#6c8654','#8d9b66']));
    }
   }
  }
