@@ -30,6 +30,9 @@ const world=new THREE.Group();scene.add(world);
 const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{type:THREE.HalfFloatType,samples:0});
 const composer=new EffectComposer(renderer,target);const basePass=new RenderPass(scene,camera);composer.addPass(basePass);
 const ao=new SSAOPass(scene,camera,innerWidth,innerHeight,16);ao.kernelRadius=.62;ao.minDistance=.001;ao.maxDistance=.075;composer.addPass(ao);
+let excludeFogFromAO=true;
+const originalAORender=ao.render.bind(ao);
+ao.render=function(...args){const hidden=[];if(excludeFogFromAO)scene.traverse(o=>{if(o.isSprite&&o.visible){hidden.push(o);o.visible=false;}});try{return originalAORender(...args);}finally{for(const o of hidden)o.visible=true;}};
 const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.15,.52,1.18);composer.addPass(bloom);
 const grade=new ShaderPass({uniforms:{tDiffuse:{value:null},uNight:{value:0},uAspect:{value:innerWidth/innerHeight}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:`uniform sampler2D tDiffuse;uniform float uNight;uniform float uAspect;varying vec2 vUv;void main(){vec3 c=texture2D(tDiffuse,vUv).rgb;float l=dot(c,vec3(.2126,.7152,.0722));c=mix(vec3(l),c,.94);vec2 p=(vUv-.5)*vec2(1.05,.88);float vig=smoothstep(.12,.59,dot(p,p));c*=1.-.13*vig;float grain=(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5)*.0035;c+=grain;gl_FragColor=vec4(max(c,0.),1.);}`});composer.addPass(grade);composer.addPass(new OutputPass());
 
@@ -135,6 +138,7 @@ async function boot(){
  const loading=document.querySelector('#loading');if(captureMode)loading.style.display='none';else{loading.classList.add('done');setTimeout(()=>loading.remove(),900);}
  const gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
  window.garden={
+  debugAO(mode){ao.enabled=mode!=='disabled';excludeFogFromAO=mode==='exclude-sprites';},
   presets:Object.keys(PRESETS),
   async capture(name){setView(name,true,true);elapsed=18.25;renderer.shadowMap.needsUpdate=true;render(0);await new Promise(resolve=>requestAnimationFrame(resolve));render(0);gl.finish();return this.diagnostics();},
   setView:(name)=>setView(name,true,false),
