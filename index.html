@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#c3cdca" />
+  <meta name="description" content="听雨小筑：可漫游的江南私家园林。三开间露明木构，雨后水庭，昼夜流转。" />
+  <title>听雨小筑 · 江南一庭烟雨</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' rx='8' fill='%23893f32'/%3E%3Ctext x='32' y='45' text-anchor='middle' fill='%23efe5cf' font-size='43' font-family='serif'%3E雨%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <main id="canvas-wrap" aria-label="可交互的江南古建园林三维场景"></main>
+  <div id="loading"><div class="loading-seal">雨</div><h2>一庭烟雨，半卷闲书</h2><p id="load-detail">正在展开园林与木构……</p><div class="loading-line"><i></i></div></div>
+  <header class="identity">
+    <p class="eyebrow">JIANGNAN &nbsp; / &nbsp; A LITERATI GARDEN</p>
+    <div class="title-line"><h1>听雨小筑</h1><span class="seal">雨<br>霁</span></div>
+    <p class="intro">疏影入窗，山水可居。</p>
+  </header>
+  <aside class="chapter"><span class="chapter-no" id="chapter-no">壹</span><div><p id="view-title">雨霁 · 游园</p><span id="view-description">粉墙黛瓦 / 曲水回廊</span></div></aside>
+  <div class="structure-note" id="structure-note" hidden><span>彻上明造</span><p>柱承梁 · 梁架檩 · 檩托椽</p><small>剖去前坡屋面，保留真实承重构架</small></div>
+  <div class="room-note" id="room-note" hidden><span id="room-name">明间</span><p id="room-copy">一案一炉，待客听雨。</p></div>
+  <footer class="toolbar">
+    <nav class="view-controls" aria-label="空间视角">
+      <button data-view="overview" class="active" title="庭院环绕视角"><span class="nav-icon">◉</span>游园</button>
+      <button data-view="hall" title="进入明间堂屋"><span class="nav-icon">⌂</span>入堂</button>
+      <button data-view="study" title="进入左次间书房"><span class="nav-icon">▤</span>书房</button>
+      <button data-view="bedroom" title="进入右次间卧房"><span class="nav-icon">▥</span>卧房</button>
+      <button data-view="structure" title="抬起前坡屋面，查看木构承重关系"><span class="nav-icon">⌘</span>木构</button>
+    </nav>
+    <span class="toolbar-divider"></span>
+    <div class="time-controls"><button id="day-button" aria-label="切换到白天">昼</button><label for="time" class="sr-only">连续日夜切换</label><input id="time" type="range" min="0" max="1" step="0.001" value="0.12" aria-label="昼夜变化" /><button id="night-button" aria-label="切换到夜晚">夜</button></div>
+    <button id="walk-button" title="第一人称自由漫游">漫游 ↗</button>
+  </footer>
+  <p class="gesture-hint" id="gesture-hint"><span>↔</span> 拖动环绕 &nbsp; · &nbsp; 滚轮 / 双指缩放</p>
+  <p class="edition">江南私家园林 &nbsp;<i></i>&nbsp; 三开间 · 露明木构</p>
+  <div id="walk-hud" hidden><span class="crosshair">+</span><p>拖动环视 · WASD / 方向键行走 · Esc 返回游园</p><div class="touch-pad"><button data-move="forward" aria-label="向前">↑</button><button data-move="left" aria-label="向左">←</button><button data-move="backward" aria-label="向后">↓</button><button data-move="right" aria-label="向右">→</button></div></div>
+  <div id="error-panel" hidden role="alert"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+name: Build, inspect and photograph the garden
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: garden-render
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore public CC0 material cache
+        uses: actions/cache@v4
+        with:
+          path: public/assets
+          key: tingyu-polyhaven-1k-v1
+      - name: Install build and browser dependencies (CI only)
+        run: npm install --no-audit --no-fund
+      - name: Prepare Chromium and Chinese serif fonts (CI only)
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Fetch CC0 photographic materials (CI only)
+        run: python3 scripts/fetch-assets.py
+      - name: Syntax-check and build
+        run: |
+          for f in src/*.js scripts/*.mjs; do node --check "$f"; done
+          npm run build
+      - name: Render seven full-resolution views and check circulation
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: npm run capture
+      - name: Preserve diagnostic evidence even if rendering fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tingyu-garden-screenshots
+          path: screenshots/
+          retention-days: 14
+      - name: Publish generated screenshots to preview release
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view visual-preview >/dev/null 2>&1 || gh release create visual-preview --target "$GITHUB_SHA" --title "听雨小筑 · 渲染截图" --prerelease --notes "Actual Chromium screenshots rendered on GitHub Actions. See render-report.json for validation evidence."
+          find screenshots -type f -maxdepth 1 -print0 | xargs -0 -r gh release upload visual-preview --clobber
+      - name: Include an image gallery in the built site
+        if: success()
+        run: |
+          mkdir -p dist/gallery
+          cp screenshots/*.jpg screenshots/render-report.json dist/gallery/
+      - name: Upload interactive website
+        if: success()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: render
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy interactive garden
+        id: deployment
+        uses: actions/deploy-pages@v4
