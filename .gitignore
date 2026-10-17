@@ -1,0 +1,7 @@
+node_modules/
+dist/
+screenshots/
+.delivery.json
+public/assets/*
+!public/assets/.gitkeep
+*.log
