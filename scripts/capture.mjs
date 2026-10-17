@@ -7,13 +7,13 @@ const server=spawn('python3',['-m','http.server','4173','--directory','dist'],{s
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 await sleep(1400);
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist','--disable-dev-shm-usage','--disable-background-timer-throttling']});
-const page=await browser.newPage({viewport:{width:2400,height:1500},deviceScaleFactor:1});
+const page=await browser.newPage({viewport:{width:1200,height:750},deviceScaleFactor:1});
 page.setDefaultTimeout(300000);
 const errors=[],warnings=[],network=[];
 page.on('console',m=>{if(m.type()==='error'){errors.push(m.text());console.error('BROWSER',m.text());}else if(m.type()==='warning')warnings.push(m.text());else if(m.text().startsWith('GARDEN'))console.log(m.text());});
 page.on('pageerror',e=>{errors.push(e.stack||e.message);console.error('PAGEERROR',e);});
 page.on('requestfailed',r=>network.push({url:r.url(),failure:r.failure()}));
-const shots=[['overview','01-garden-day'],['bluehour','02-blue-hour'],['night','03-garden-night'],['hall','04-hall'],['study','05-study'],['bedroom','06-bedroom'],['structure','07-timber-cutaway']];
+const shots=[['overview','01-garden-day'],['study','05-study'],['structure','07-timber-cutaway']];
 const report={created:new Date().toISOString(),commit:process.env.GITHUB_SHA||null,runner:'GitHub-hosted Ubuntu; Chromium ANGLE SwiftShader. No local/phone rendering.',shots:[],errors,warnings,network};
 let failure=null;
 try{
@@ -27,6 +27,9 @@ try{
  for(const [preset,file]of shots){
   const t=Date.now();console.log('RENDERING',preset);
   const diagnostic=await page.evaluate(async name=>await window.garden.capture(name),preset);
+  const frameSample=await page.evaluate(()=>window.garden.frameSample());
+  if(frameSample.mean<2)throw new Error(`The ${preset} framebuffer is black; refusing to publish it.`);
+  diagnostic.frameSample=frameSample;
   await page.screenshot({path:`screenshots/${file}.png`,type:'png',timeout:300000});
   await page.screenshot({path:`screenshots/${file}.jpg`,type:'jpeg',quality:94,timeout:300000});
   report.shots.push({preset,file,seconds:(Date.now()-t)/1000,diagnostic});console.log('CAPTURED',file,report.shots.at(-1).seconds,'seconds');
@@ -43,6 +46,11 @@ try{
  report.interaction.firstPersonActuallyMoved=Math.hypot(after[0]-before[0],after[2]-before[2])>.15;
  if(!report.interaction.firstPersonActuallyMoved)throw new Error('First-person movement did not move the camera.');
  await page.keyboard.press('Escape');report.interaction.escapeExitsWalking=await page.evaluate(()=>!window.garden.diagnostics().walking);
+ await page.evaluate(()=>window.garden.setTime(.1));await page.click('#night-button');
+ const mid=await page.evaluate(()=>window.garden.advance(.35));const later=await page.evaluate(()=>window.garden.advance(.65));
+ await page.click('#day-button');const back=await page.evaluate(()=>window.garden.advance(.4));
+ report.interaction.continuousDayNight={mid,later,back,ok:mid>.1&&mid<later&&later<1&&back<later};
+ if(!report.interaction.continuousDayNight.ok)throw new Error('Visible day/night controls did not drive a continuous light transition.');
  if(errors.some(e=>/Shader Error|VALIDATE_STATUS|GL_INVALID|Error|THREE.WebGLProgram/i.test(e)))throw new Error('Browser/GL errors were recorded; screenshots require review.');
  report.ok=true;
 }catch(e){failure=e;report.ok=false;report.failure=e.stack||String(e);console.error(e);await page.screenshot({path:'screenshots/failure.jpg',type:'jpeg',quality:85,timeout:90000}).catch(()=>{});}

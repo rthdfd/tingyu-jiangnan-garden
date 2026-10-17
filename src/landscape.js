@@ -101,9 +101,9 @@ function reflectionShader(){return {
 function waterAndWeather(parent,M,ctx){
  const g=group(parent);const normals=waterNormals();
  const waterGeometry=shapeXZ(pondOutline);waterGeometry.rotateX(Math.PI/2);
- const water=new Water(waterGeometry,{textureWidth:1024,textureHeight:1024,waterNormals:normals,sunDirection:V(-.3,.8,.4).normalize(),sunColor:0xc9d0b9,waterColor:0x344e40,distortionScale:1.38,fog:true,alpha:1});
+ const water=new Water(waterGeometry,{textureWidth:512,textureHeight:512,waterNormals:normals,sunDirection:V(-.3,.8,.4).normalize(),sunColor:0xc9d0b9,waterColor:0x344e40,distortionScale:1.38,fog:true,alpha:1});
  water.rotation.x=-Math.PI/2;water.position.y=.094;water.name='Rainwater pond with planar reflections';water.material.uniforms.size.value=4.2;g.add(water);ctx.water=water;
- const refl=new Reflector(new THREE.PlaneGeometry(7.9,4.40),{textureWidth:768,textureHeight:768,color:0x8a9b91,clipBias:.008,shader:reflectionShader(),multisample:0});refl.rotation.x=-Math.PI/2;refl.position.set(-4.64,.195,1.32);refl.material.transparent=true;refl.material.depthWrite=false;refl.renderOrder=3;g.add(refl);ctx.puddle=refl;
+ const refl=new Reflector(new THREE.PlaneGeometry(7.9,4.40),{textureWidth:384,textureHeight:384,color:0x8a9b91,clipBias:.008,shader:reflectionShader(),multisample:0});refl.rotation.x=-Math.PI/2;refl.position.set(-4.64,.195,1.32);refl.material.transparent=true;refl.material.depthWrite=false;refl.renderOrder=3;g.add(refl);ctx.puddle=refl;
  const wo=water.onBeforeRender,ro=refl.onBeforeRender;
  water.onBeforeRender=function(renderer,scene,camera,...args){if(scene.overrideMaterial)return;const vis=refl.visible;refl.visible=false;wo.call(this,renderer,scene,camera,...args);refl.visible=vis;};
  refl.onBeforeRender=function(renderer,scene,camera,...args){if(scene.overrideMaterial)return;const vis=water.visible;water.visible=false;ro.call(this,renderer,scene,camera,...args);water.visible=vis;};

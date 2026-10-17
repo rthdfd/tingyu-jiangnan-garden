@@ -8,7 +8,7 @@ permissions:
   pages: write
   id-token: write
 concurrency:
-  group: garden-render
+  group: garden-draft
   cancel-in-progress: true
 jobs:
   render:
@@ -44,7 +44,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: tingyu-garden-screenshots
+          name: tingyu-garden-draft
           path: screenshots/
           retention-days: 14
       - name: Publish generated screenshots to preview release
@@ -52,13 +52,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view visual-preview >/dev/null 2>&1 || gh release create visual-preview --target "$GITHUB_SHA" --title "听雨小筑 · 渲染截图" --prerelease --notes "Actual Chromium screenshots rendered on GitHub Actions. See render-report.json for validation evidence."
-          find screenshots -type f -maxdepth 1 -print0 | xargs -0 -r gh release upload visual-preview --clobber
+          gh release view draft-preview >/dev/null 2>&1 || gh release create draft-preview --target "$GITHUB_SHA" --title "听雨小筑 · 渲染截图" --prerelease --notes "Actual Chromium screenshots rendered on GitHub Actions. See render-report.json for validation evidence."
+          find screenshots -type f -maxdepth 1 -print0 | xargs -0 -r gh release upload draft-preview --clobber
       - name: Include an image gallery in the built site
         if: success()
         run: |
           mkdir -p dist/gallery
           cp screenshots/*.jpg screenshots/render-report.json dist/gallery/
+          node scripts/gallery.mjs
       - name: Upload interactive website
         if: success()
         uses: actions/upload-pages-artifact@v3

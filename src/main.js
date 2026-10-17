@@ -23,11 +23,11 @@ document.querySelector('#canvas-wrap').append(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1.3,0);controls.enableDamping=true;controls.dampingFactor=.07;controls.minDistance=2.1;controls.maxDistance=62;controls.maxPolarAngle=Math.PI*.485;controls.minPolarAngle=.15;controls.enablePan=true;controls.screenSpacePanning=false;controls.update();
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(500,500),new THREE.MeshStandardMaterial({color:0xb3c1b9,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.75;floor.receiveShadow=true;scene.add(floor);
 const hemi=new THREE.HemisphereLight(0xc3d6d2,0x687653,1.58);scene.add(hemi);
-const sun=new THREE.DirectionalLight(0xffebc8,2.35);sun.position.set(-9,19,12);sun.target.position.set(-1,0,-2);scene.add(sun,sun.target);sun.castShadow=true;sun.shadow.mapSize.set(captureMode?3072:2048,captureMode?3072:2048);Object.assign(sun.shadow.camera,{left:-20,right:20,top:19,bottom:-19,near:1,far:60});sun.shadow.normalBias=.028;sun.shadow.bias=-.00022;sun.shadow.radius=3.4;
+const sun=new THREE.DirectionalLight(0xffebc8,2.35);sun.position.set(-9,19,12);sun.target.position.set(-1,0,-2);scene.add(sun,sun.target);sun.castShadow=true;sun.shadow.mapSize.set(captureMode?1024:2048,captureMode?1024:2048);Object.assign(sun.shadow.camera,{left:-20,right:20,top:19,bottom:-19,near:1,far:60});sun.shadow.normalBias=.028;sun.shadow.bias=-.00022;sun.shadow.radius=3.4;
 const fill=new THREE.DirectionalLight(0xd8e7d4,.46);fill.position.set(9,10,-13);scene.add(fill);
 const world=new THREE.Group();scene.add(world);
 
-const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{type:THREE.HalfFloatType,samples:captureMode?2:0});
+const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{type:THREE.HalfFloatType,samples:0});
 const composer=new EffectComposer(renderer,target);const basePass=new RenderPass(scene,camera);composer.addPass(basePass);
 const ao=new SSAOPass(scene,camera,innerWidth,innerHeight,16);ao.kernelRadius=.62;ao.minDistance=.001;ao.maxDistance=.075;composer.addPass(ao);
 const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.15,.52,1.18);composer.addPass(bloom);
@@ -141,6 +141,8 @@ async function boot(){
   setTime(n){timeValue=timeTarget=clamp(n,0,1);document.querySelector('#time').value=timeValue;render(0);},
   startWalking,stopWalking,
   step(direction,seconds=.10){keys.add(direction);walk(seconds);keys.delete(direction);render(0);return camera.position.toArray();},
+  advance(seconds){const n=Math.max(1,Math.ceil(seconds/.05)),dt=seconds/n;for(let i=0;i<n;i++)timeValue=lerp(timeValue,timeTarget,Math.min(1,dt*2));elapsed+=seconds;render(0);return timeValue;},
+  frameSample(){const samples=[],pixel=new Uint8Array(4);for(const [x,y]of [[.5,.5],[.32,.42],[.70,.42],[.5,.65]]){gl.readPixels(Math.floor(renderer.domElement.width*x),Math.floor(renderer.domElement.height*y),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);samples.push([...pixel]);}return {samples,mean:samples.reduce((s,p)=>s+p[0]+p[1]+p[2],0)/12};},
   position:()=>camera.position.toArray(),canStand,floorHeight,
   render:()=>render(0),
   diagnostics:()=>({view,time:timeValue,walking,firstPersonEyeHeight:1.58,renderer:debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),webgl2:renderer.capabilities.isWebGL2,photographicPBR:photoSets,environment:manifest.environment?.asset||'RoomEnvironment',leafCount:ctx.leafCount,colliders:ctx.colliders.length,rooms:['hall','study','bedroom'],roofFrontVisible:ctx.mainRoof.front.visible,render:{...renderer.info.render},memory:{...renderer.info.memory},camera:camera.position.toArray(),resolution:[innerWidth,innerHeight],canStandAtDoor:canStand(-2.7,-1.7)})
